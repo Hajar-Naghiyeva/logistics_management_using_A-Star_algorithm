@@ -8,4 +8,6 @@ Steps for running in local:
 4. Navigate to `logistics_management/logistics_management/`
 5. Type `run` in command prompt (Windows) or `python manage.py runsevrer` (MacOS/Linux)
 
+## Preview 
 
+https://github.com/Hajar-Naghiyeva/logistics_management_using_A-Star_algorithm/blob/main/Logistics%20_%20Management.mp4
