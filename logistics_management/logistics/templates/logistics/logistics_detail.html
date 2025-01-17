@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+  {{ cargo }}-{{ cargo.truck }}
+{% endblock %}
+
+{% block content %}
+  <section class="text-gray-600 body-font overflow-hidden">
+    <div class="container px-5 px-24 py-10 mx-auto">
+      <div class="lg:w-4/5 mx-auto flex flex-wrap">
+        <div class="lg:w-1/2 w-full lg:pr-10 lg:py-6 mb-6 lg:mb-0">
+          <h1 class="text-gray-900 text-3xl title-font font-medium mb-4">{{ cargo }}</h1>
+          <div class="flex mb-4">
+            <p class="flex-grow border-b-2 border-gray-300 py-2 text-lg px-1">{{ driver }}</p>
+          </div>
+          <div class="flex border-gray-200 py-2">
+            <span class="text-gray-500">Driver License</span>
+            <span class="ml-auto text-gray-900">{{ driver_license }}</span>
+          </div>
+          <div class="flex border-t border-gray-200 py-2">
+            <span class="text-gray-500">Registered Truck</span>
+            <span class="ml-auto text-gray-900">{{ truck_plate }}</span>
+          </div>
+          <div class="flex border-t border-b mb-6 border-gray-200 py-2">
+            <span class="text-gray-500">Load</span>
+            <span class="ml-auto text-gray-900">{{ truck_load }}.0 tons</span>
+          </div>
+          <p class="flex-grow border-b-2 border-gray-300 py-2 text-lg px-1">Route</p>
+          <div class="border-b p-2 w-2/3">
+            <p class="text-gray-500">
+              Start Point: <span class="text-gray-600 font-bold">{{ start_point }}</span>
+            </p>
+          </div>
+          <div class="scroll-container" {% if shortest_path|length > 4 %}style="max-height: 160px; overflow-y: auto;"{% endif %}>
+            {% for city in shortest_path %}
+                <div class="border-b p-2 w-2/3">
+                    <span class="text-gray-500">Route {{ forloop.counter }}: {{ city }}</span>
+                </div>
+            {% endfor %}
+        </div>
+        
+
+          <div class="border-b p-2 w-2/3">
+            <p class="text-gray-500">
+              Destination: <span class="text-gray-600 font-bold">{{ destination }}</span>
+            </p>
+          </div>
+          <div class="border-b p-2 w-2/3">
+            <p class="text-gray-500">
+              Travel Distance: <span class="text-gray-600 font-bold">{{ total_distance }}km</span>
+            </p>
+          </div>
+          <div class="border-b p-2 w-2/3">
+            <p class="text-gray-500">
+              Travel Time: <span class="text-gray-600 font-bold">{{ travel_time }}</span>
+            </p>
+          </div>
+          <div class="flex mt-2">
+            <a href="{% url 'delete_cargo_order' cargo.id %}" class="flex ml-auto text-white bg-red-500 border-0 py-2 px-6 focus:outline-none hover:bg-red-600 rounded">Delete</a>
+            <a href="{% url 'edit_cargo_order' cargo.id %}" class="flex ml-5 text-white bg-yellow-500 border-0 py-2 px-6 focus:outline-none hover:bg-yellow-600 rounded">Edit</a>
+          </div>
+        </div>
+        <div id="map" alt="cargo" class="lg:w-1/2 w-full lg:h-auto h-64 object-contain object-center rounded"></div>
+        <!-- Add this script to the bottom of your template, after the existing content -->
+        <script>
+          console.log("Start Latitude:", {{ start_lat }});
+          console.log("Start Longitude:", {{ start_long }});
+          console.log("End Latitude:", {{ end_lat }});
+          console.log("End Longitude:", {{ end_long }});
+      
+          function initMap() {
+              const map = new google.maps.Map(document.getElementById('map'), {
+                  center: { lat: {{ start_lat }}, lng: {{ start_long }} }, // Set the center to the starting point
+                  zoom: 8, // Adjust the zoom level as needed
+              });
+      
+              // Get the city_coordinates from the Django context
+              const cityCoordinates = [
+                  { lat: {{ start_lat }}, lng: {{ start_long }}, title: "{{ start_point }}" }, // Start point
+                  // Use the city_coordinates variable generated in the Django view
+                  {% for point in city_coordinates %}
+                      { lat: {{ point.lat }}, lng: {{ point.lng }}, title: "{{ point }}" },
+                  {% endfor %}
+                  { lat: {{ end_lat }}, lng: {{ end_long }}, title: "{{ destination }}" } // End point
+              ];
+      
+              // Create a Polyline to represent the route on the map
+              const path = new google.maps.Polyline({
+                  path: cityCoordinates,
+                  geodesic: true,
+                  strokeColor: '#0E06FF',
+                  strokeOpacity: 1.0,
+                  strokeWeight: 4,
+              });
+      
+              // Set the Polyline on the map
+              path.setMap(map);
+      
+              // Add markers for each coordinate
+              cityCoordinates.forEach(coord => {
+                  const marker = new google.maps.Marker({
+                      position: { lat: coord.lat, lng: coord.lng },
+                      map: map,
+                      title: coord.title,  // Set the title from the coordinate data
+                  });
+              });
+          }
+        </script>        
+        <!-- Include the Google Maps API script with your API key -->
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAFniygO5gJJT9y7xgC3CRm2NoZz0a_2Ak&callback=initMap" async defer></script>
+
+      </div>
+    </div>
+  </section>
+{% endblock %}
