@@ -1,3 +1,6 @@
 # Auto detect text files and perform LF normalization
 * text=auto
 logistics_management/*.py linguist-language=Python
+*.html linguist-detectable=true
+*.py linguist-detectable=true
+
